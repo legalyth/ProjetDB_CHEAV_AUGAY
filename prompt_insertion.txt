@@ -1,0 +1,60 @@
+PROMPT POUR L'INSERTION DE DONNÉES DANS LA BASE DE DONNÉES SALLE DE SPORT
+===========================================================================
+
+Contexte :
+Je dispose d'une base de données pour une salle de sport moderne avec la structure suivante :
+- ADHERENT (id_adherent, nom_adherent, prenom_adherent, adresse_adherent, email_adherent, numero_telephone_adherent, date_naissance_adherent, genre_adherent)
+- CERTIFICAT_MEDICAL (id_certificat, date_emission_certificat, date_expiration_certificat, id_adherent)
+- BADGE (id_badge, numero_badge_acces, id_adherent)
+- TYPE_ABONNEMENT (id_type_abonnement, type_abonnement, options_additionnelles, prix_abonnement)
+- DUREE (id_duree, duree_abonnement)
+- ABONNEMENT (id_abonnement, date_debut, date_fin, id_adherent, id_type_abonnement, id_duree)
+- PRESENCE (id_presence, date_entree_salle, date_sortie_salle, id_adherent)
+- TYPE_COURS (id_type_cours, type_cours_collectif)
+- SALLE (id_salle, salle_cours)
+- SPECIALITE (id_specialite, specialite_coach)
+- COACH (id_coach, nom_coach, prenom_coach, disponibilite_hebdomadaire_coach)
+- SPECIALITE_COACH (id_specialite_coach, id_coach, id_specialite)
+- COURS_COLLECTIF (id_cours, horaire_cours, nombre_max_participants_cours, id_type_cours, id_coach, id_salle)
+- RESERVATION (id_reservation, date_reservation, id_adherent, id_cours)
+- SESSION_COACHING (id_session, date_session_coaching, duree_session_coaching, id_adherent, id_coach)
+- SUIVI_NUTRITIONNEL (id_suivi, objectifs_nutritionnels_adherent, id_adherent)
+- PRODUIT (id_produit, nom_produit_vendu, prix_produit)
+- ACHAT (id_achat, quantite_vendue, date_achat, id_adherent, id_produit)
+
+
+
+Contraintes à respecter :
+1. Les types d'abonnement sont : 'standard', 'premium', 'étudiant'
+2. Les durées d'abonnement sont : 'mensuel', 'annuel'
+3. Le genre est : 'Homme', 'Femme', 'Autre'
+4. Les adhérents doivent avoir au moins 16 ans
+5. Les certificats médicaux sont valides maximum 1 an
+6. Les types de cours incluent : 'yoga', 'pilates', 'cycling', 'HIIT', 'crossfit', 'zumba'
+7. Les spécialités des coachs : 'yoga', 'musculation', 'cardio', 'nutrition', 'HIIT', 'pilates'
+8. Les produits vendus : compléments alimentaires (protéines, créatine, BCAA) et merchandising (t-shirts, bouteilles, serviettes)
+9. Les numéros de badge sont au format : BADGE-XXXX (ex: BADGE-0001)
+10. Les dates doivent être cohérentes (entre 2023 et 2025)
+11. Les emails doivent être uniques et au format valide
+12. Les durées de sessions de coaching sont entre 30 et 120 minutes
+13. Le nombre maximum de participants par cours est entre 10 et 30
+
+Quantités demandées :
+- 15 adhérents
+- 15 certificats médicaux (un par adhérent)
+- 15 badges (un par adhérent)
+- 3 types d'abonnement (standard, premium, étudiant)
+- 2 durées (mensuel, annuel)
+- 20 abonnements (certains adhérents peuvent avoir plusieurs abonnements successifs)
+- 30 présences
+- 6 types de cours (yoga, pilates, cycling, HIIT, crossfit, zumba)
+- 3 salles
+- 6 spécialités
+- 5 coachs
+- 8 relations specialite_coach (certains coachs ont plusieurs spécialités)
+- 10 cours collectifs
+- 25 réservations
+- 10 sessions de coaching
+- 5 suivis nutritionnels
+- 8 produits
+- 15 achats
