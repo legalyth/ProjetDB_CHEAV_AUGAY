@@ -1,10 +1,10 @@
+-- 1_creation.sql 
 
--- Script de création de la base de données
+DROP DATABASE IF EXISTS salle_de_sport;
+CREATE DATABASE salle_de_sport;
+USE salle_de_sport;
 
-CREATE database salle_de_sport;
-use salle_de_sport;
-
--- Suppression des tables si elles existent déjà
+-- Suppression des tables
 DROP TABLE IF EXISTS ACHAT;
 DROP TABLE IF EXISTS PRODUIT;
 DROP TABLE IF EXISTS SUIVI_NUTRITIONNEL;
@@ -24,192 +24,173 @@ DROP TABLE IF EXISTS BADGE;
 DROP TABLE IF EXISTS CERTIFICAT_MEDICAL;
 DROP TABLE IF EXISTS ADHERENT;
 
-
--- Table ADHERENT
-
+-- ADHERENT
 CREATE TABLE ADHERENT (
-    id_adherent INT AUTO_INCREMENT,
-    nom_adherent VARCHAR(50) NOT NULL,
-    prenom_adherent VARCHAR(50) NOT NULL,
-    adresse_adherent VARCHAR(100) NOT NULL,
-    email_adherent VARCHAR(100) NOT NULL,
-    numero_telephone_adherent VARCHAR(15) NOT NULL,
-    date_naissance_adherent DATE NOT NULL,
-    genre_adherent VARCHAR(10) NOT NULL,
-    PRIMARY KEY (id_adherent)
+  id_adherent INT AUTO_INCREMENT PRIMARY KEY,
+  nom_adherent VARCHAR(50) NOT NULL,
+  prenom_adherent VARCHAR(50) NOT NULL,
+  adresse_adherent VARCHAR(100) NOT NULL,
+  email_adherent VARCHAR(100) NOT NULL,
+  numero_telephone_adherent VARCHAR(15) NOT NULL,
+  date_naissance_adherent DATE NOT NULL,
+  genre_adherent VARCHAR(10) NOT NULL,
+  UNIQUE (email_adherent)
 );
 
-
--- Table CERTIFICAT_MEDICAL
-
+-- CERTIFICAT_MEDICAL
 CREATE TABLE CERTIFICAT_MEDICAL (
-    id_certificat INT AUTO_INCREMENT,
-    date_emission_certificat DATE NOT NULL,
-    date_expiration_certificat DATE NOT NULL,
-    id_adherent INT NOT NULL,
-    PRIMARY KEY (id_certificat)
+  id_certificat INT AUTO_INCREMENT PRIMARY KEY,
+  date_emission_certificat DATE NOT NULL,
+  date_expiration_certificat DATE NOT NULL,
+  id_adherent INT NOT NULL,
+  FOREIGN KEY (id_adherent) REFERENCES ADHERENT(id_adherent)
 );
 
-
--- Table BADGE
-
+-- BADGE
 CREATE TABLE BADGE (
-    id_badge INT AUTO_INCREMENT,
-    numero_badge_acces VARCHAR(20) NOT NULL,
-    id_adherent INT NOT NULL,
-    PRIMARY KEY (id_badge)
+  id_badge INT AUTO_INCREMENT PRIMARY KEY,
+  numero_badge_acces VARCHAR(20) NOT NULL,
+  id_adherent INT NOT NULL,
+  UNIQUE (numero_badge_acces),
+  UNIQUE (id_adherent),
+  FOREIGN KEY (id_adherent) REFERENCES ADHERENT(id_adherent)
 );
 
-
--- Table TYPE_ABONNEMENT
-
+-- TYPE_ABONNEMENT
 CREATE TABLE TYPE_ABONNEMENT (
-    id_type_abonnement INT AUTO_INCREMENT,
-    type_abonnement VARCHAR(20) NOT NULL,
-    options_additionnelles VARCHAR(50),
-    prix_abonnement DECIMAL(10,2) NOT NULL,
-    PRIMARY KEY (id_type_abonnement)
+  id_type_abonnement INT AUTO_INCREMENT PRIMARY KEY,
+  type_abonnement VARCHAR(20) NOT NULL,
+  options_additionnelles VARCHAR(50),
+  prix_abonnement DECIMAL(10,2) NOT NULL,
+  UNIQUE (type_abonnement)
 );
 
-
--- Table DUREE
-
+-- DUREE
 CREATE TABLE DUREE (
-    id_duree INT AUTO_INCREMENT,
-    duree_abonnement VARCHAR(10) NOT NULL,
-    PRIMARY KEY (id_duree)
+  id_duree INT AUTO_INCREMENT PRIMARY KEY,
+  duree_abonnement VARCHAR(10) NOT NULL,
+  UNIQUE (duree_abonnement)
 );
 
-
--- Table ABONNEMENT
-
+-- ABONNEMENT
 CREATE TABLE ABONNEMENT (
-    id_abonnement INT AUTO_INCREMENT,
-    date_debut DATE NOT NULL,
-    date_fin DATE NOT NULL,
-    id_adherent INT NOT NULL,
-    id_type_abonnement INT NOT NULL,
-    id_duree INT NOT NULL,
-    PRIMARY KEY (id_abonnement)
+  id_abonnement INT AUTO_INCREMENT PRIMARY KEY,
+  date_debut DATE NOT NULL,
+  date_fin DATE NOT NULL,
+  id_adherent INT NOT NULL,
+  id_type_abonnement INT NOT NULL,
+  id_duree INT NOT NULL,
+  FOREIGN KEY (id_adherent) REFERENCES ADHERENT(id_adherent),
+  FOREIGN KEY (id_type_abonnement) REFERENCES TYPE_ABONNEMENT(id_type_abonnement),
+  FOREIGN KEY (id_duree) REFERENCES DUREE(id_duree)
 );
 
-
--- Table PRESENCE
-
+-- PRESENCE
 CREATE TABLE PRESENCE (
-    id_presence INT AUTO_INCREMENT,
-    date_entree_salle DATETIME NOT NULL,
-    date_sortie_salle DATETIME,
-    id_adherent INT NOT NULL,
-    PRIMARY KEY (id_presence)
+  id_presence INT AUTO_INCREMENT PRIMARY KEY,
+  date_entree_salle DATETIME NOT NULL,
+  date_sortie_salle DATETIME,
+  id_adherent INT NOT NULL,
+  FOREIGN KEY (id_adherent) REFERENCES ADHERENT(id_adherent)
 );
 
-
--- Table TYPE_COURS
-
+-- TYPE_COURS
 CREATE TABLE TYPE_COURS (
-    id_type_cours INT AUTO_INCREMENT,
-    type_cours_collectif VARCHAR(30) NOT NULL,
-    PRIMARY KEY (id_type_cours)
+  id_type_cours INT AUTO_INCREMENT PRIMARY KEY,
+  type_cours_collectif VARCHAR(30) NOT NULL,
+  UNIQUE (type_cours_collectif)
 );
 
-
--- Table SALLE
-
+-- SALLE
 CREATE TABLE SALLE (
-    id_salle INT AUTO_INCREMENT,
-    salle_cours VARCHAR(20) NOT NULL,
-    PRIMARY KEY (id_salle)
+  id_salle INT AUTO_INCREMENT PRIMARY KEY,
+  salle_cours VARCHAR(20) NOT NULL,
+  UNIQUE (salle_cours)
 );
 
-
--- Table SPECIALITE
-
+-- SPECIALITE
 CREATE TABLE SPECIALITE (
-    id_specialite INT AUTO_INCREMENT,
-    specialite_coach VARCHAR(50) NOT NULL,
-    PRIMARY KEY (id_specialite)
+  id_specialite INT AUTO_INCREMENT PRIMARY KEY,
+  specialite_coach VARCHAR(50) NOT NULL,
+  UNIQUE (specialite_coach)
 );
 
-
--- Table COACH
-
+-- COACH
 CREATE TABLE COACH (
-    id_coach INT AUTO_INCREMENT,
-    nom_coach VARCHAR(50) NOT NULL,
-    prenom_coach VARCHAR(50) NOT NULL,
-    disponibilite_hebdomadaire_coach VARCHAR(100),
-    PRIMARY KEY (id_coach)
+  id_coach INT AUTO_INCREMENT PRIMARY KEY,
+  nom_coach VARCHAR(50) NOT NULL,
+  prenom_coach VARCHAR(50) NOT NULL,
+  disponibilite_hebdomadaire_coach VARCHAR(100)
 );
 
-
--- Table SPECIALITE_COACH
-
+-- SPECIALITE_COACH (N-N)
 CREATE TABLE SPECIALITE_COACH (
-    id_specialite_coach INT AUTO_INCREMENT,
-    id_coach INT NOT NULL,
-    id_specialite INT NOT NULL,
-    PRIMARY KEY (id_specialite_coach)
+  id_specialite_coach INT AUTO_INCREMENT PRIMARY KEY,
+  id_coach INT NOT NULL,
+  id_specialite INT NOT NULL,
+  UNIQUE (id_coach, id_specialite),
+  FOREIGN KEY (id_coach) REFERENCES COACH(id_coach),
+  FOREIGN KEY (id_specialite) REFERENCES SPECIALITE(id_specialite)
 );
 
-
--- Table COURS_COLLECTIF
-
+-- COURS_COLLECTIF
 CREATE TABLE COURS_COLLECTIF (
-    id_cours INT AUTO_INCREMENT,
-    horaire_cours TIME NOT NULL,
-    nombre_max_participants_cours INT NOT NULL,
-    id_type_cours INT NOT NULL,
-    id_coach INT NOT NULL,
-    id_salle INT NOT NULL,
-    PRIMARY KEY (id_cours)
+  id_cours INT AUTO_INCREMENT PRIMARY KEY,
+  horaire_cours TIME NOT NULL,
+  nombre_max_participants_cours INT NOT NULL,
+  id_type_cours INT NOT NULL,
+  id_coach INT NOT NULL,
+  id_salle INT NOT NULL,
+  FOREIGN KEY (id_type_cours) REFERENCES TYPE_COURS(id_type_cours),
+  FOREIGN KEY (id_coach) REFERENCES COACH(id_coach),
+  FOREIGN KEY (id_salle) REFERENCES SALLE(id_salle)
 );
 
--- Table RESERVATION
-
+-- RESERVATION
 CREATE TABLE RESERVATION (
-    id_reservation INT AUTO_INCREMENT,
-    date_reservation DATE NOT NULL,
-    id_adherent INT NOT NULL,
-    id_cours INT NOT NULL,
-    PRIMARY KEY (id_reservation)
+  id_reservation INT AUTO_INCREMENT PRIMARY KEY,
+  date_reservation DATE NOT NULL,
+  id_adherent INT NOT NULL,
+  id_cours INT NOT NULL,
+  UNIQUE (id_adherent, id_cours, date_reservation),
+  FOREIGN KEY (id_adherent) REFERENCES ADHERENT(id_adherent),
+  FOREIGN KEY (id_cours) REFERENCES COURS_COLLECTIF(id_cours)
 );
 
--- Table SESSION_COACHING
-
+-- SESSION_COACHING
 CREATE TABLE SESSION_COACHING (
-    id_session INT AUTO_INCREMENT,
-    date_session_coaching DATE NOT NULL,
-    duree_session_coaching INT NOT NULL,
-    id_adherent INT NOT NULL,
-    id_coach INT NOT NULL,
-    PRIMARY KEY (id_session)
+  id_session INT AUTO_INCREMENT PRIMARY KEY,
+  date_session_coaching DATE NOT NULL,
+  duree_session_coaching INT NOT NULL,
+  id_adherent INT NOT NULL,
+  id_coach INT NOT NULL,
+  FOREIGN KEY (id_adherent) REFERENCES ADHERENT(id_adherent),
+  FOREIGN KEY (id_coach) REFERENCES COACH(id_coach)
 );
 
--- Table SUIVI_NUTRITIONNEL
-
+-- SUIVI_NUTRITIONNEL
 CREATE TABLE SUIVI_NUTRITIONNEL (
-    id_suivi INT AUTO_INCREMENT,
-    objectifs_nutritionnels_adherent VARCHAR(200),
-    id_adherent INT NOT NULL,
-    PRIMARY KEY (id_suivi)
+  id_suivi INT AUTO_INCREMENT PRIMARY KEY,
+  objectifs_nutritionnels_adherent VARCHAR(200),
+  id_adherent INT NOT NULL,
+  FOREIGN KEY (id_adherent) REFERENCES ADHERENT(id_adherent)
 );
 
--- Table PRODUIT
+-- PRODUIT
 CREATE TABLE PRODUIT (
-    id_produit INT AUTO_INCREMENT,
-    nom_produit_vendu VARCHAR(50) NOT NULL,
-    prix_produit DECIMAL(10,2) NOT NULL,
-    PRIMARY KEY (id_produit)
+  id_produit INT AUTO_INCREMENT PRIMARY KEY,
+  nom_produit_vendu VARCHAR(50) NOT NULL,
+  prix_produit DECIMAL(10,2) NOT NULL,
+  UNIQUE (nom_produit_vendu)
 );
 
--- Table ACHAT
-
+-- ACHAT
 CREATE TABLE ACHAT (
-    id_achat INT AUTO_INCREMENT,
-    quantite_vendue INT NOT NULL,
-    date_achat DATE NOT NULL,
-    id_adherent INT NOT NULL,
-    id_produit INT NOT NULL,
-    PRIMARY KEY (id_achat)
+  id_achat INT AUTO_INCREMENT PRIMARY KEY,
+  quantite_vendue INT NOT NULL,
+  date_achat DATE NOT NULL,
+  id_adherent INT NOT NULL,
+  id_produit INT NOT NULL,
+  FOREIGN KEY (id_adherent) REFERENCES ADHERENT(id_adherent),
+  FOREIGN KEY (id_produit) REFERENCES PRODUIT(id_produit)
 );
