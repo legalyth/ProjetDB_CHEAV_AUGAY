@@ -1,152 +1,176 @@
--- 3_insertion.sql
+-- ============================================
+-- 4_interrogation.sql
+-- Scénario d’utilisation :
+-- Un/une responsable de la salle souhaite :
+-- 1) Suivre les abonnements et la fréquentation (réservations, coaching)
+-- 2) Consolider les ventes de produits
+-- 3) Piloter l’offre de cours (capacités, planning, coachs)
+-- Chaque requête ci-dessous répond à un besoin précis (commenté).
+-- Base : salle_de_sport (MySQL 8.0)
+-- ============================================
 
--- 1) TYPE_ABONNEMENT (3)
-INSERT INTO TYPE_ABONNEMENT (type_abonnement, options_additionnelles, prix_abonnement) VALUES
-('standard', NULL, 29.99),
-('premium',  NULL, 49.99),
-('étudiant', NULL, 19.99);
+-- A. PROJECTIONS / SÉLECTIONS (≥5) 
 
--- 2) DUREE (2)
-INSERT INTO DUREE (duree_abonnement) VALUES
-('mensuel'),
-('annuel');
+-- A1. Lister les adhérents dont l’email est sur le domaine example.com (ordre alphabétique)
+SELECT id_adherent, nom_adherent, prenom_adherent, email_adherent
+FROM ADHERENT
+WHERE email_adherent LIKE '%@example.com'
+ORDER BY nom_adherent, prenom_adherent;
 
--- 3) TYPE_COURS (10)
-INSERT INTO TYPE_COURS (type_cours_collectif) VALUES
-('Cours01'),('Cours02'),('Cours03'),('Cours04'),('Cours05'),
-('Cours06'),('Cours07'),('Cours08'),('Cours09'),('Cours10');
+-- A2. Cours aux heures “journée” (entre 08:00 et 18:00) et capacité ≥ 15, triés par capacité décroissante
+SELECT id_cours, horaire_cours, nombre_max_participants_cours
+FROM COURS_COLLECTIF
+WHERE horaire_cours BETWEEN '08:00:00' AND '18:00:00'
+  AND nombre_max_participants_cours >= 15
+ORDER BY nombre_max_participants_cours DESC, horaire_cours;
 
--- 4) SALLE (10)
-INSERT INTO SALLE (salle_cours) VALUES
-('Salle01'),('Salle02'),('Salle03'),('Salle04'),('Salle05'),
-('Salle06'),('Salle07'),('Salle08'),('Salle09'),('Salle10');
+-- A3. Produits au prix moyen (entre 10 et 30 euros), du moins cher au plus cher
+SELECT id_produit, nom_produit_vendu, prix_produit
+FROM PRODUIT
+WHERE prix_produit BETWEEN 10 AND 30
+ORDER BY prix_produit, nom_produit_vendu;
 
--- 5) SPECIALITE (10)
-INSERT INTO SPECIALITE (specialite_coach) VALUES
-('Spec01'),('Spec02'),('Spec03'),('Spec04'),('Spec05'),
-('Spec06'),('Spec07'),('Spec08'),('Spec09'),('Spec10');
+-- A4. Genres distincts présents parmi les adhérents (données uniques)
+SELECT DISTINCT genre_adherent
+FROM ADHERENT
+ORDER BY genre_adherent;
 
--- 6) PRODUIT (10)
-INSERT INTO PRODUIT (nom_produit_vendu, prix_produit) VALUES
-('Produit001', 9.99), ('Produit002', 14.50), ('Produit003', 19.90), ('Produit004', 7.50), ('Produit005', 29.00),
-('Produit006', 49.90), ('Produit007', 5.00), ('Produit008', 12.00), ('Produit009', 39.99), ('Produit010', 24.99);
+-- A5. Réservations d’un sous-ensemble d’adhérents le 2025-10-10 (filtre IN)
+SELECT id_reservation, id_adherent, id_cours, date_reservation
+FROM RESERVATION
+WHERE date_reservation = '2025-10-10'
+  AND id_adherent IN (1,3,5,7,9)
+ORDER BY id_adherent;
 
--- 7) ADHERENT (10)
-INSERT INTO ADHERENT (nom_adherent, prenom_adherent, adresse_adherent, email_adherent, numero_telephone_adherent, date_naissance_adherent, genre_adherent) VALUES
-('Nom001','Prenom001','Adresse 001','user001@example.com','0610000001','1998-05-10','Homme'),
-('Nom002','Prenom002','Adresse 002','user002@example.com','0610000002','1999-07-12','Femme'),
-('Nom003','Prenom003','Adresse 003','user003@example.com','0610000003','2000-03-22','Autre'),
-('Nom004','Prenom004','Adresse 004','user004@example.com','0610000004','1997-11-30','Homme'),
-('Nom005','Prenom005','Adresse 005','user005@example.com','0610000005','1995-01-15','Femme'),
-('Nom006','Prenom006','Adresse 006','user006@example.com','0610000006','2002-08-08','Autre'),
-('Nom007','Prenom007','Adresse 007','user007@example.com','0610000007','1990-09-19','Homme'),
-('Nom008','Prenom008','Adresse 008','user008@example.com','0610000008','2001-12-05','Femme'),
-('Nom009','Prenom009','Adresse 009','user009@example.com','0610000009','1996-04-03','Autre'),
-('Nom010','Prenom010','Adresse 010','user010@example.com','0610000010','1994-06-21','Homme');
+-- B. AGRÉGATIONS + GROUP BY/HAVING (≥5)
 
--- 8) COACH (10)
-INSERT INTO COACH (nom_coach, prenom_coach, disponibilite_hebdomadaire_coach) VALUES
-('CoachNom01','CoachPrenom01','Lun 09-12; Mer 14-18'),
-('CoachNom02','CoachPrenom02','Mar 10-12; Jeu 15-19'),
-('CoachNom03','CoachPrenom03','Lun 08-11; Ven 13-17'),
-('CoachNom04','CoachPrenom04','Mer 09-12; Sam 10-14'),
-('CoachNom05','CoachPrenom05','Mar 14-18; Ven 09-12'),
-('CoachNom06','CoachPrenom06','Lun 13-17; Jeu 09-12'),
-('CoachNom07','CoachPrenom07','Mer 10-12; Ven 15-19'),
-('CoachNom08','CoachPrenom08','Mar 08-12; Sam 09-12'),
-('CoachNom09','CoachPrenom09','Lun 10-12; Jeu 14-18'),
-('CoachNom10','CoachPrenom10','Mer 14-18; Ven 08-11');
+-- B1. Nombre de réservations par cours pour la date du 2025-10-10
+SELECT id_cours, COUNT(*) AS nb_reservations
+FROM RESERVATION
+WHERE date_reservation = '2025-10-10'
+GROUP BY id_cours
+ORDER BY nb_reservations DESC, id_cours;
 
--- 9) SPECIALITE_COACH (10)
-INSERT INTO SPECIALITE_COACH (id_coach, id_specialite) VALUES
-(1,1),(2,2),(3,3),(4,4),(5,5),
-(6,6),(7,7),(8,8),(9,9),(10,10);
+-- B2. Nombre de réservations par adhérent (ne retenir que ceux qui en ont au moins 1)
+SELECT id_adherent, COUNT(*) AS nb_reservations
+FROM RESERVATION
+GROUP BY id_adherent
+HAVING COUNT(*) >= 1
+ORDER BY nb_reservations DESC, id_adherent;
 
--- 10) CERTIFICAT_MEDICAL (10)  (émission 2025, expiration ≤ +12 mois)
-INSERT INTO CERTIFICAT_MEDICAL (date_emission_certificat, date_expiration_certificat, id_adherent) VALUES
-('2025-03-01','2025-09-01',1),
-('2025-03-15','2025-09-15',2),
-('2025-04-01','2025-10-01',3),
-('2025-04-10','2025-10-10',4),
-('2025-05-05','2025-11-05',5),
-('2025-05-20','2025-11-20',6),
-('2025-06-01','2025-12-01',7),
-('2025-06-15','2025-12-15',8),
-('2025-07-01','2026-01-01',9),
-('2025-07-10','2026-01-10',10);
+-- B3. Chiffre d’affaires par produit (quantité × prix), ne montrer que les produits vendus (>0)
+SELECT p.id_produit, p.nom_produit_vendu,
+       SUM(a.quantite_vendue * p.prix_produit) AS ca_produit
+FROM ACHAT a
+JOIN PRODUIT p ON p.id_produit = a.id_produit
+GROUP BY p.id_produit, p.nom_produit_vendu
+HAVING SUM(a.quantite_vendue) > 0
+ORDER BY ca_produit DESC;
 
--- 11) BADGE (10)  (un badge par adhérent)
-INSERT INTO BADGE (numero_badge_acces, id_adherent) VALUES
-('BADGE0001',1),('BADGE0002',2),('BADGE0003',3),('BADGE0004',4),('BADGE0005',5),
-('BADGE0006',6),('BADGE0007',7),('BADGE0008',8),('BADGE0009',9),('BADGE0010',10);
+-- B4. Statistiques globales de prix des produits (min, max, moyenne)
+SELECT MIN(prix_produit) AS min_prix,
+       MAX(prix_produit) AS max_prix,
+       AVG(prix_produit) AS avg_prix
+FROM PRODUIT;
 
--- 12) ABONNEMENT (10)
--- Pair = annuel (DUREE=2, 2025-03-01 -> 2026-03-01), Impair = mensuel (DUREE=1, 2025-09-15 -> 2025-10-15)
-INSERT INTO ABONNEMENT (date_debut, date_fin, id_adherent, id_type_abonnement, id_duree) VALUES
-('2025-09-15','2025-10-15',1,1,1),
-('2025-03-01','2026-03-01',2,2,2),
-('2025-09-15','2025-10-15',3,3,1),
-('2025-03-01','2026-03-01',4,1,2),
-('2025-09-15','2025-10-15',5,2,1),
-('2025-03-01','2026-03-01',6,3,2),
-('2025-09-15','2025-10-15',7,1,1),
-('2025-03-01','2026-03-01',8,2,2),
-('2025-09-15','2025-10-15',9,3,1),
-('2025-03-01','2026-03-01',10,1,2);
+-- B5. Durée moyenne des sessions de coaching par coach (ne garder que moyenne ≥ 45 min)
+SELECT sc.id_coach, AVG(sc.duree_session_coaching) AS duree_moyenne_min
+FROM SESSION_COACHING sc
+GROUP BY sc.id_coach
+HAVING AVG(sc.duree_session_coaching) >= 45
+ORDER BY duree_moyenne_min DESC;
 
--- 13) COURS_COLLECTIF (10)
-INSERT INTO COURS_COLLECTIF (horaire_cours, nombre_max_participants_cours, id_type_cours, id_coach, id_salle) VALUES
-('08:00:00',15,1,1,1),
-('09:00:00',20,2,2,2),
-('10:00:00',12,3,3,3),
-('18:00:00',25,4,4,4),
-('19:00:00',30,5,5,5),
-('07:30:00',10,6,6,6),
-('12:00:00',18,7,7,7),
-('17:00:00',16,8,8,8),
-('20:00:00',14,9,9,9),
-('21:00:00',22,10,10,10);
+-- C. JOINTURES (≥5)
 
--- 14) RESERVATION (10)  (toutes au 2025-10-10, dans la période d’abonnement de chaque adhérent)
-INSERT INTO RESERVATION (date_reservation, id_adherent, id_cours) VALUES
-('2025-10-10',1,1),
-('2025-10-10',2,2),
-('2025-10-10',3,3),
-('2025-10-10',4,4),
-('2025-10-10',5,5),
-('2025-10-10',6,6),
-('2025-10-10',7,7),
-('2025-10-10',8,8),
-('2025-10-10',9,9),
-('2025-10-10',10,10);
+-- C1. Réservations détaillées : adhérent + cours + coach + salle (jointures multiples)
+SELECT r.id_reservation, r.date_reservation,
+       ad.nom_adherent, ad.prenom_adherent,
+       cc.horaire_cours, cc.nombre_max_participants_cours,
+       c.prenom_coach, c.nom_coach,
+       s.salle_cours
+FROM RESERVATION r
+JOIN ADHERENT ad       ON ad.id_adherent = r.id_adherent
+JOIN COURS_COLLECTIF cc ON cc.id_cours = r.id_cours
+JOIN COACH c           ON c.id_coach = cc.id_coach
+JOIN SALLE s           ON s.id_salle = cc.id_salle
+ORDER BY r.date_reservation, r.id_reservation;
 
--- 15) SESSION_COACHING (10)
-INSERT INTO SESSION_COACHING (date_session_coaching, duree_session_coaching, id_adherent, id_coach) VALUES
-('2025-09-20',60,1,1),
-('2025-09-22',45,2,2),
-('2025-09-25',30,3,3),
-('2025-10-01',90,4,4),
-('2025-10-03',60,5,5),
-('2025-10-05',45,6,6),
-('2025-10-07',30,7,7),
-('2025-10-09',120,8,8),
-('2025-10-12',75,9,9),
-('2025-10-15',60,10,10);
+-- C2. Adhérents avec leur type d’abonnement et durée
+SELECT ad.id_adherent, ad.nom_adherent, ad.prenom_adherent,
+       ta.type_abonnement, d.duree_abonnement,
+       a.date_debut, a.date_fin
+FROM ADHERENT ad
+JOIN ABONNEMENT a          ON a.id_adherent = ad.id_adherent
+JOIN TYPE_ABONNEMENT ta    ON ta.id_type_abonnement = a.id_type_abonnement
+JOIN DUREE d               ON d.id_duree = a.id_duree
+ORDER BY ad.id_adherent, a.date_debut;
 
--- 16) SUIVI_NUTRITIONNEL (10)
-INSERT INTO SUIVI_NUTRITIONNEL (objectifs_nutritionnels_adherent, id_adherent) VALUES
-('Objectif 001',1),('Objectif 002',2),('Objectif 003',3),('Objectif 004',4),('Objectif 005',5),
-('Objectif 006',6),('Objectif 007',7),('Objectif 008',8),('Objectif 009',9),('Objectif 010',10);
+-- C3. Sessions de coaching détaillées (adhérent + coach)
+SELECT sc.id_session, sc.date_session_coaching, sc.duree_session_coaching,
+       ad.nom_adherent, ad.prenom_adherent,
+       c.prenom_coach, c.nom_coach
+FROM SESSION_COACHING sc
+JOIN ADHERENT ad ON ad.id_adherent = sc.id_adherent
+JOIN COACH c     ON c.id_coach = sc.id_coach
+ORDER BY sc.date_session_coaching, sc.id_session;
 
--- 17) ACHAT (10)
-INSERT INTO ACHAT (quantite_vendue, date_achat, id_adherent, id_produit) VALUES
-(2,'2025-09-10',1,1),
-(1,'2025-09-12',2,2),
-(3,'2025-09-15',3,3),
-(1,'2025-09-18',4,4),
-(2,'2025-09-20',5,5),
-(1,'2025-10-02',6,6),
-(4,'2025-10-05',7,7),
-(2,'2025-10-07',8,8),
-(1,'2025-10-10',9,9),
-(5,'2025-10-15',10,10);
+-- C4. Spécialités des coachs (inner join N-N via table de liaison)
+SELECT c.id_coach, c.nom_coach, c.prenom_coach, s.specialite_coach
+FROM COACH c
+JOIN SPECIALITE_COACH sc ON sc.id_coach = c.id_coach
+JOIN SPECIALITE s        ON s.id_specialite = sc.id_specialite
+ORDER BY c.id_coach, s.specialite_coach;
+
+-- C5. Tous les coachs et leur nombre de cours attribués (LEFT JOIN pour inclure ceux sans cours)
+SELECT c.id_coach, c.nom_coach, c.prenom_coach,
+       COUNT(cc.id_cours) AS nb_cours
+FROM COACH c
+LEFT JOIN COURS_COLLECTIF cc ON cc.id_coach = c.id_coach
+GROUP BY c.id_coach, c.nom_coach, c.prenom_coach
+ORDER BY nb_cours DESC, c.id_coach;
+
+
+--  D. SOUS-REQUÊTES (IN / EXISTS / ANY / ALL) (≥5)
+
+-- D1. Produits plus chers que le prix moyen (sous-requête scalaire)
+SELECT id_produit, nom_produit_vendu, prix_produit
+FROM PRODUIT
+WHERE prix_produit > (SELECT AVG(prix_produit) FROM PRODUIT)
+ORDER BY prix_produit DESC;
+
+-- D2. Adhérents ayant un abonnement actif au 2025-10-10 (EXISTS + BETWEEN)
+SELECT ad.id_adherent, ad.nom_adherent, ad.prenom_adherent
+FROM ADHERENT ad
+WHERE EXISTS (
+  SELECT 1
+  FROM ABONNEMENT a
+  WHERE a.id_adherent = ad.id_adherent
+    AND '2025-10-10' BETWEEN a.date_debut AND a.date_fin
+)
+ORDER BY ad.id_adherent;
+
+-- D3. Adhérents n’ayant JAMAIS effectué d’achat (NOT EXISTS)
+SELECT ad.id_adherent, ad.nom_adherent, ad.prenom_adherent
+FROM ADHERENT ad
+WHERE NOT EXISTS (
+  SELECT 1 FROM ACHAT ac WHERE ac.id_adherent = ad.id_adherent
+)
+ORDER BY ad.id_adherent;
+
+-- D4. Coachs ayant au moins un cours attribué (EXISTS)
+SELECT c.id_coach, c.nom_coach, c.prenom_coach
+FROM COACH c
+WHERE EXISTS (
+  SELECT 1 FROM COURS_COLLECTIF cc WHERE cc.id_coach = c.id_coach
+)
+ORDER BY c.id_coach;
+
+-- D5. Cours dont la capacité est > à TOUTES les capacités des cours du matin (< 12:00) (ALL)
+SELECT id_cours, nombre_max_participants_cours
+FROM COURS_COLLECTIF
+WHERE nombre_max_participants_cours > ALL (
+  SELECT nombre_max_participants_cours
+  FROM COURS_COLLECTIF
+  WHERE horaire_cours < '12:00:00'
+)
+ORDER BY nombre_max_participants_cours DESC, id_cours;
