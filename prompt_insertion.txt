@@ -1,60 +1,100 @@
-PROMPT POUR L'INSERTION DE DONNÉES DANS LA BASE DE DONNÉES SALLE DE SPORT
-===========================================================================
+Rôle
+Tu es un générateur de données pour MySQL 8.0. Ta mission est de produire un fichier 3_insertion.sql contenant UNIQUEMENT des instructions INSERT INTO ... VALUES ...; (aucun commentaire ni explication). Le fichier doit pouvoir s’exécuter après 1_creation.sql et 2_contraintes.sql fournis, sans erreur.
 
-Contexte :
-Je dispose d'une base de données pour une salle de sport moderne avec la structure suivante :
-- ADHERENT (id_adherent, nom_adherent, prenom_adherent, adresse_adherent, email_adherent, numero_telephone_adherent, date_naissance_adherent, genre_adherent)
-- CERTIFICAT_MEDICAL (id_certificat, date_emission_certificat, date_expiration_certificat, id_adherent)
-- BADGE (id_badge, numero_badge_acces, id_adherent)
-- TYPE_ABONNEMENT (id_type_abonnement, type_abonnement, options_additionnelles, prix_abonnement)
-- DUREE (id_duree, duree_abonnement)
-- ABONNEMENT (id_abonnement, date_debut, date_fin, id_adherent, id_type_abonnement, id_duree)
-- PRESENCE (id_presence, date_entree_salle, date_sortie_salle, id_adherent)
-- TYPE_COURS (id_type_cours, type_cours_collectif)
-- SALLE (id_salle, salle_cours)
-- SPECIALITE (id_specialite, specialite_coach)
-- COACH (id_coach, nom_coach, prenom_coach, disponibilite_hebdomadaire_coach)
-- SPECIALITE_COACH (id_specialite_coach, id_coach, id_specialite)
-- COURS_COLLECTIF (id_cours, horaire_cours, nombre_max_participants_cours, id_type_cours, id_coach, id_salle)
-- RESERVATION (id_reservation, date_reservation, id_adherent, id_cours)
-- SESSION_COACHING (id_session, date_session_coaching, duree_session_coaching, id_adherent, id_coach)
-- SUIVI_NUTRITIONNEL (id_suivi, objectifs_nutritionnels_adherent, id_adherent)
-- PRODUIT (id_produit, nom_produit_vendu, prix_produit)
-- ACHAT (id_achat, quantite_vendue, date_achat, id_adherent, id_produit)
+Contexte (schéma déjà créé)
+Base : salle_de_sport. Les tables existent avec clés primaires auto-incrémentées et contraintes (PK, FK, UNIQUE, CHECK, triggers).
+Ne fournis aucune instruction CREATE, ALTER, DROP ni USE. Ne renseigne aucune colonne id_* (auto-incrément).
 
+Ordre d’insertion à respecter
+TYPE_ABONNEMENT (valeurs limitées)
+DUREE (valeurs limitées)
+TYPE_COURS
+SALLE
+SPECIALITE
+PRODUIT
+ADHERENT
+COACH
+SPECIALITE_COACH
+CERTIFICAT_MEDICAL
+BADGE
+ABONNEMENT
+COURS_COLLECTIF
+RESERVATION
+SESSION_COACHING
+SUIVI_NUTRITIONNEL
+ACHAT
+(La table PRESENCE est optionnelle ici : si tu en insères, place-la après ABONNEMENT.)
 
+Volume et style des données
+Données génériques mais plausibles (ex. Nom001, Prenom001, adresses simples, emails du type user001@example.com, téléphones 0XXXXXXXXX).
 
-Contraintes à respecter :
-1. Les types d'abonnement sont : 'standard', 'premium', 'étudiant'
-2. Les durées d'abonnement sont : 'mensuel', 'annuel'
-3. Le genre est : 'Homme', 'Femme', 'Autre'
-4. Les adhérents doivent avoir au moins 16 ans
-5. Les certificats médicaux sont valides maximum 1 an
-6. Les types de cours incluent : 'yoga', 'pilates', 'cycling', 'HIIT', 'crossfit', 'zumba'
-7. Les spécialités des coachs : 'yoga', 'musculation', 'cardio', 'nutrition', 'HIIT', 'pilates'
-8. Les produits vendus : compléments alimentaires (protéines, créatine, BCAA) et merchandising (t-shirts, bouteilles, serviettes)
-9. Les numéros de badge sont au format : BADGE-XXXX (ex: BADGE-0001)
-10. Les dates doivent être cohérentes (entre 2023 et 2025)
-11. Les emails doivent être uniques et au format valide
-12. Les durées de sessions de coaching sont entre 30 et 120 minutes
-13. Le nombre maximum de participants par cours est entre 10 et 30
+Objectif : 10 lignes par table pour toutes les tables sauf :
+TYPE_ABONNEMENT → insérer exactement 3 lignes : 'standard', 'premium', 'étudiant' (UNIQUE).
+DUREE → insérer exactement 2 lignes : 'mensuel', 'annuel' (UNIQUE).
+TYPE_COURS, SALLE, SPECIALITE, PRODUIT : 10 lignes distinctes chacune.
+SPECIALITE_COACH, RESERVATION, SESSION_COACHING, SUIVI_NUTRITIONNEL, ACHAT : 10 lignes chacune, en respectant les FKs.
+COURS_COLLECTIF : 10 lignes.
+ADHERENT : 10 lignes.
+COACH : 10 lignes.
+BADGE : 10 lignes (un badge par adhérent, numero_badge_acces unique).
+CERTIFICAT_MEDICAL : 10 lignes (un certificat par adhérent).
 
-Quantités demandées :
-- 15 adhérents
-- 15 certificats médicaux (un par adhérent)
-- 15 badges (un par adhérent)
-- 3 types d'abonnement (standard, premium, étudiant)
-- 2 durées (mensuel, annuel)
-- 20 abonnements (certains adhérents peuvent avoir plusieurs abonnements successifs)
-- 30 présences
-- 6 types de cours (yoga, pilates, cycling, HIIT, crossfit, zumba)
-- 3 salles
-- 6 spécialités
-- 5 coachs
-- 8 relations specialite_coach (certains coachs ont plusieurs spécialités)
-- 10 cours collectifs
-- 25 réservations
-- 10 sessions de coaching
-- 5 suivis nutritionnels
-- 8 produits
-- 15 achats
+Contraintes MÉTIER à respecter (très important)
+ADHERENT :
+email_adherent unique, format simple *@*.*.
+numero_telephone_adherent au format ^0[0-9]{9}$.
+date_naissance_adherent → âge ≥ 16 ans (calculé à partir d’une date actuelle raisonnable).
+genre_adherent ∈ ('Homme','Femme','Autre').
+CERTIFICAT_MEDICAL : date_expiration_certificat > date_emission_certificat, durée ≤ 12 mois.
+
+ABONNEMENT :
+Références valides à TYPE_ABONNEMENT et DUREE.
+date_debut et date_fin cohérentes (si date_fin laissée NULL, un trigger la calcule selon la durée ; sinon mets-la explicitement).
+
+RESERVATION :
+UNIQUE (id_adherent, id_cours, date_reservation) (éviter les doublons).
+Capacité à ne pas dépasser : pour un (id_cours, date_reservation) donnée, le nombre de réservations doit être < nombre_max_participants_cours.
+L’adhérent doit avoir un abonnement actif à la date_reservation.
+
+PRESENCE (si utilisée) :
+L’adhérent doit avoir un abonnement actif au DATE(date_entree_salle).
+date_sortie_salle > date_entree_salle (ou NULL si encore présent).
+SESSION_COACHING : duree_session_coaching entre 15 et 180 minutes.
+PRODUIT : prix_produit > 0.
+ACHAT : quantite_vendue > 0, date_achat ≤ date du jour.
+COURS_COLLECTIF : horaire_cours entre 06:00:00 et 23:00:00, nombre_max_participants_cours entre 1 et 50.
+
+Cohérence conseillée des dates (exemples de bornes)
+Utilise des dates en 2025.
+Certificats : émission entre 2025-01-01 et 2025-10-01, expiration au plus +12 mois.
+Abonnements : débuts entre 2025-02-01 et 2025-10-15; si mensuel, fin ≈ +1 mois ; si annuel, fin ≈ +1 an.
+Réservations : choisies dans la période d’abonnement de l’adhérent et à des dates où tu prévois des cours.
+Cours collectifs : horaire_cours plausibles (08:00, 10:00, 18:00, etc.).
+Sessions coaching : dates en 2025, durées variées (30, 45, 60, 90…).
+
+Règles techniques
+Ne renseigne jamais les colonnes id_* (auto-incrément).
+Chaque instruction INSERT se termine par ;.
+Pas d’INSERT ... SELECT. Utilise des VALUES(...).
+Ne dépasse pas la capacité des cours dans RESERVATION.
+Respecte les UNIQUE (email adhérent, badge, type_abonnement, duree_abonnement, (id_coach,id_specialite), (id_adherent,id_cours,date_reservation), nom_produit_vendu).
+Veille à insérer des FK valides : par exemple, SPECIALITE_COACH ne référence que des COACH/SPECIALITE déjà insérés, etc.
+Format de sortie EXIGÉ
+Un seul bloc de code SQL (sans texte autour).
+Commence directement par les INSERT dans l’ordre indiqué.
+
+Objectif de volume :
+TYPE_ABONNEMENT = 3 lignes : ('standard'), ('premium'), ('étudiant') (avec prix_abonnement cohérents et options_additionnelles éventuellement NULL ou court texte).
+DUREE = 2 lignes : ('mensuel'), ('annuel').
+Toutes les autres tables = 10 lignes chacune, en respectant les contraintes ci-dessus.
+
+Exemples de valeurs génériques acceptées (ne pas copier tel quel, ils sont juste illustratifs)
+Emails : user001@example.com, user002@example.com, …
+Téléphones : 0123456789, 0612345678, …
+Badges : BADGE0001, BADGE0002, …
+Produits : Produit001… prix 9.99, 14.50, etc.
+Salles : Salle01…
+Types de cours : Cours01…
+Spécialités : Spec01…
+
+Produis uniquement le SQL final contenant tous les INSERT corrects.
