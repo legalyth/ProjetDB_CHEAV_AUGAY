@@ -1,235 +1,152 @@
+-- 3_insertion.sql
 
--- Script d'interrogation de la base de données
+-- 1) TYPE_ABONNEMENT (3)
+INSERT INTO TYPE_ABONNEMENT (type_abonnement, options_additionnelles, prix_abonnement) VALUES
+('standard', NULL, 29.99),
+('premium',  NULL, 49.99),
+('étudiant', NULL, 19.99);
 
+-- 2) DUREE (2)
+INSERT INTO DUREE (duree_abonnement) VALUES
+('mensuel'),
+('annuel');
 
-/*
-SCÉNARIO D'UTILISATION:
-Le directeur de la salle de sport souhaite analyser l'activité de son établissement
-pour prendre des décisions stratégiques concernant:
-- La gestion des adhérents et la fidélisation
-- L'optimisation des cours collectifs
-- La performance des coachs
-- Les ventes de produits
-- La rentabilité des différents types d'abonnements
-*/
+-- 3) TYPE_COURS (10)
+INSERT INTO TYPE_COURS (type_cours_collectif) VALUES
+('Cours01'),('Cours02'),('Cours03'),('Cours04'),('Cours05'),
+('Cours06'),('Cours07'),('Cours08'),('Cours09'),('Cours10');
 
--- PARTIE 1: PROJECTIONS ET SÉLECTIONS (5 requêtes)
+-- 4) SALLE (10)
+INSERT INTO SALLE (salle_cours) VALUES
+('Salle01'),('Salle02'),('Salle03'),('Salle04'),('Salle05'),
+('Salle06'),('Salle07'),('Salle08'),('Salle09'),('Salle10');
 
+-- 5) SPECIALITE (10)
+INSERT INTO SPECIALITE (specialite_coach) VALUES
+('Spec01'),('Spec02'),('Spec03'),('Spec04'),('Spec05'),
+('Spec06'),('Spec07'),('Spec08'),('Spec09'),('Spec10');
 
--- Requête 1: Liste des adhérents femmes âgées de plus de 25 ans, triée par nom
--- Données recherchées: Identifier les adhérentes dans une tranche d'âge spécifique pour une campagne marketing ciblée
-SELECT nom_adherent, prenom_adherent, email_adherent, 
-       TIMESTAMPDIFF(YEAR, date_naissance_adherent, CURDATE()) AS age
-FROM ADHERENT
-WHERE genre_adherent = 'Femme' 
-  AND TIMESTAMPDIFF(YEAR, date_naissance_adherent, CURDATE()) > 25
-ORDER BY nom_adherent, prenom_adherent;
+-- 6) PRODUIT (10)
+INSERT INTO PRODUIT (nom_produit_vendu, prix_produit) VALUES
+('Produit001', 9.99), ('Produit002', 14.50), ('Produit003', 19.90), ('Produit004', 7.50), ('Produit005', 29.00),
+('Produit006', 49.90), ('Produit007', 5.00), ('Produit008', 12.00), ('Produit009', 39.99), ('Produit010', 24.99);
 
--- Requête 2: Liste des abonnements premium ou étudiant actifs en ce moment (BETWEEN, IN)
--- Données recherchées: Connaître les adhérents qui ont accès aux services premium ou bénéficient de réductions étudiantes
-SELECT a.id_abonnement, ad.nom_adherent, ad.prenom_adherent, 
-       t.type_abonnement, a.date_debut, a.date_fin
-FROM ABONNEMENT a
-JOIN ADHERENT ad ON a.id_adherent = ad.id_adherent
-JOIN TYPE_ABONNEMENT t ON a.id_type_abonnement = t.id_type_abonnement
-WHERE t.type_abonnement IN ('premium', 'étudiant')
-  AND CURDATE() BETWEEN a.date_debut AND a.date_fin
-ORDER BY a.date_fin;
+-- 7) ADHERENT (10)
+INSERT INTO ADHERENT (nom_adherent, prenom_adherent, adresse_adherent, email_adherent, numero_telephone_adherent, date_naissance_adherent, genre_adherent) VALUES
+('Nom001','Prenom001','Adresse 001','user001@example.com','0610000001','1998-05-10','Homme'),
+('Nom002','Prenom002','Adresse 002','user002@example.com','0610000002','1999-07-12','Femme'),
+('Nom003','Prenom003','Adresse 003','user003@example.com','0610000003','2000-03-22','Autre'),
+('Nom004','Prenom004','Adresse 004','user004@example.com','0610000004','1997-11-30','Homme'),
+('Nom005','Prenom005','Adresse 005','user005@example.com','0610000005','1995-01-15','Femme'),
+('Nom006','Prenom006','Adresse 006','user006@example.com','0610000006','2002-08-08','Autre'),
+('Nom007','Prenom007','Adresse 007','user007@example.com','0610000007','1990-09-19','Homme'),
+('Nom008','Prenom008','Adresse 008','user008@example.com','0610000008','2001-12-05','Femme'),
+('Nom009','Prenom009','Adresse 009','user009@example.com','0610000009','1996-04-03','Autre'),
+('Nom010','Prenom010','Adresse 010','user010@example.com','0610000010','1994-06-21','Homme');
 
--- Requête 3: Recherche des coachs dont le prénom commence par 'M' ou 'S' (masques LIKE)
--- Données recherchées: Filtrer les coachs selon un critère de prénom pour une communication interne
-SELECT DISTINCT nom_coach, prenom_coach, disponibilite_hebdomadaire_coach
-FROM COACH
-WHERE prenom_coach LIKE 'M%' OR prenom_coach LIKE 'S%'
-ORDER BY prenom_coach;
+-- 8) COACH (10)
+INSERT INTO COACH (nom_coach, prenom_coach, disponibilite_hebdomadaire_coach) VALUES
+('CoachNom01','CoachPrenom01','Lun 09-12; Mer 14-18'),
+('CoachNom02','CoachPrenom02','Mar 10-12; Jeu 15-19'),
+('CoachNom03','CoachPrenom03','Lun 08-11; Ven 13-17'),
+('CoachNom04','CoachPrenom04','Mer 09-12; Sam 10-14'),
+('CoachNom05','CoachPrenom05','Mar 14-18; Ven 09-12'),
+('CoachNom06','CoachPrenom06','Lun 13-17; Jeu 09-12'),
+('CoachNom07','CoachPrenom07','Mer 10-12; Ven 15-19'),
+('CoachNom08','CoachPrenom08','Mar 08-12; Sam 09-12'),
+('CoachNom09','CoachPrenom09','Lun 10-12; Jeu 14-18'),
+('CoachNom10','CoachPrenom10','Mer 14-18; Ven 08-11');
 
--- Requête 4: Liste unique des types de cours proposés avec leur nombre maximum de participants
--- Données recherchées: Vue d'ensemble de l'offre de cours pour planification
-SELECT DISTINCT tc.type_cours_collectif, 
-       MAX(cc.nombre_max_participants_cours) AS capacite_max
-FROM TYPE_COURS tc
-JOIN COURS_COLLECTIF cc ON tc.id_type_cours = cc.id_type_cours
-GROUP BY tc.type_cours_collectif
-ORDER BY capacite_max DESC;
+-- 9) SPECIALITE_COACH (10)
+INSERT INTO SPECIALITE_COACH (id_coach, id_specialite) VALUES
+(1,1),(2,2),(3,3),(4,4),(5,5),
+(6,6),(7,7),(8,8),(9,9),(10,10);
 
--- Requête 5: Produits dont le prix est entre 10€ et 20€ (BETWEEN)
--- Données recherchées: Identifier les produits dans une gamme de prix moyenne pour promotions
-SELECT nom_produit_vendu, prix_produit
-FROM PRODUIT
-WHERE prix_produit BETWEEN 10.00 AND 20.00
-ORDER BY prix_produit;
+-- 10) CERTIFICAT_MEDICAL (10)  (émission 2025, expiration ≤ +12 mois)
+INSERT INTO CERTIFICAT_MEDICAL (date_emission_certificat, date_expiration_certificat, id_adherent) VALUES
+('2025-03-01','2025-09-01',1),
+('2025-03-15','2025-09-15',2),
+('2025-04-01','2025-10-01',3),
+('2025-04-10','2025-10-10',4),
+('2025-05-05','2025-11-05',5),
+('2025-05-20','2025-11-20',6),
+('2025-06-01','2025-12-01',7),
+('2025-06-15','2025-12-15',8),
+('2025-07-01','2026-01-01',9),
+('2025-07-10','2026-01-10',10);
 
+-- 11) BADGE (10)  (un badge par adhérent)
+INSERT INTO BADGE (numero_badge_acces, id_adherent) VALUES
+('BADGE0001',1),('BADGE0002',2),('BADGE0003',3),('BADGE0004',4),('BADGE0005',5),
+('BADGE0006',6),('BADGE0007',7),('BADGE0008',8),('BADGE0009',9),('BADGE0010',10);
 
--- PARTIE 2: FONCTIONS D'AGRÉGATION (5 requêtes)
+-- 12) ABONNEMENT (10)
+-- Pair = annuel (DUREE=2, 2025-03-01 -> 2026-03-01), Impair = mensuel (DUREE=1, 2025-09-15 -> 2025-10-15)
+INSERT INTO ABONNEMENT (date_debut, date_fin, id_adherent, id_type_abonnement, id_duree) VALUES
+('2025-09-15','2025-10-15',1,1,1),
+('2025-03-01','2026-03-01',2,2,2),
+('2025-09-15','2025-10-15',3,3,1),
+('2025-03-01','2026-03-01',4,1,2),
+('2025-09-15','2025-10-15',5,2,1),
+('2025-03-01','2026-03-01',6,3,2),
+('2025-09-15','2025-10-15',7,1,1),
+('2025-03-01','2026-03-01',8,2,2),
+('2025-09-15','2025-10-15',9,3,1),
+('2025-03-01','2026-03-01',10,1,2);
 
+-- 13) COURS_COLLECTIF (10)
+INSERT INTO COURS_COLLECTIF (horaire_cours, nombre_max_participants_cours, id_type_cours, id_coach, id_salle) VALUES
+('08:00:00',15,1,1,1),
+('09:00:00',20,2,2,2),
+('10:00:00',12,3,3,3),
+('18:00:00',25,4,4,4),
+('19:00:00',30,5,5,5),
+('07:30:00',10,6,6,6),
+('12:00:00',18,7,7,7),
+('17:00:00',16,8,8,8),
+('20:00:00',14,9,9,9),
+('21:00:00',22,10,10,10);
 
--- Requête 6: Nombre d'adhérents par genre
--- Données recherchées: Statistiques démographiques pour adapter l'offre de cours
-SELECT genre_adherent, COUNT(*) AS nombre_adherents
-FROM ADHERENT
-GROUP BY genre_adherent
-ORDER BY nombre_adherents DESC;
+-- 14) RESERVATION (10)  (toutes au 2025-10-10, dans la période d’abonnement de chaque adhérent)
+INSERT INTO RESERVATION (date_reservation, id_adherent, id_cours) VALUES
+('2025-10-10',1,1),
+('2025-10-10',2,2),
+('2025-10-10',3,3),
+('2025-10-10',4,4),
+('2025-10-10',5,5),
+('2025-10-10',6,6),
+('2025-10-10',7,7),
+('2025-10-10',8,8),
+('2025-10-10',9,9),
+('2025-10-10',10,10);
 
--- Requête 7: Chiffre d'affaires total par type d'abonnement
--- Données recherchées: Analyser la rentabilité de chaque formule d'abonnement
-SELECT t.type_abonnement, 
-       COUNT(a.id_abonnement) AS nombre_abonnements,
-       SUM(t.prix_abonnement) AS ca_total,
-       AVG(t.prix_abonnement) AS prix_moyen
-FROM ABONNEMENT a
-JOIN TYPE_ABONNEMENT t ON a.id_type_abonnement = t.id_type_abonnement
-GROUP BY t.type_abonnement, t.prix_abonnement
-ORDER BY ca_total DESC;
+-- 15) SESSION_COACHING (10)
+INSERT INTO SESSION_COACHING (date_session_coaching, duree_session_coaching, id_adherent, id_coach) VALUES
+('2025-09-20',60,1,1),
+('2025-09-22',45,2,2),
+('2025-09-25',30,3,3),
+('2025-10-01',90,4,4),
+('2025-10-03',60,5,5),
+('2025-10-05',45,6,6),
+('2025-10-07',30,7,7),
+('2025-10-09',120,8,8),
+('2025-10-12',75,9,9),
+('2025-10-15',60,10,10);
 
--- Requête 8: Nombre de réservations par cours, afficher seulement les cours avec plus de 2 réservations (HAVING)
--- Données recherchées: Identifier les cours les plus populaires pour optimiser la planification
-SELECT cc.id_cours, tc.type_cours_collectif, cc.horaire_cours,
-       COUNT(r.id_reservation) AS nombre_reservations
-FROM COURS_COLLECTIF cc
-JOIN TYPE_COURS tc ON cc.id_type_cours = tc.id_type_cours
-LEFT JOIN RESERVATION r ON cc.id_cours = r.id_cours
-GROUP BY cc.id_cours, tc.type_cours_collectif, cc.horaire_cours
-HAVING COUNT(r.id_reservation) > 2
-ORDER BY nombre_reservations DESC;
+-- 16) SUIVI_NUTRITIONNEL (10)
+INSERT INTO SUIVI_NUTRITIONNEL (objectifs_nutritionnels_adherent, id_adherent) VALUES
+('Objectif 001',1),('Objectif 002',2),('Objectif 003',3),('Objectif 004',4),('Objectif 005',5),
+('Objectif 006',6),('Objectif 007',7),('Objectif 008',8),('Objectif 009',9),('Objectif 010',10);
 
--- Requête 9: Chiffre d'affaires des ventes de produits par adhérent (avec HAVING pour CA > 20€)
--- Données recherchées: Identifier les meilleurs clients en termes d'achats de produits
-SELECT ad.id_adherent, ad.nom_adherent, ad.prenom_adherent,
-       COUNT(ac.id_achat) AS nombre_achats,
-       SUM(ac.quantite_vendue * p.prix_produit) AS ca_total
-FROM ADHERENT ad
-JOIN ACHAT ac ON ad.id_adherent = ac.id_adherent
-JOIN PRODUIT p ON ac.id_produit = p.id_produit
-GROUP BY ad.id_adherent, ad.nom_adherent, ad.prenom_adherent
-HAVING SUM(ac.quantite_vendue * p.prix_produit) > 20
-ORDER BY ca_total DESC;
-
--- Requête 10: Durée moyenne de présence par adhérent en heures
--- Données recherchées: Analyser le temps moyen passé à la salle pour évaluer l'engagement
-SELECT ad.id_adherent, ad.nom_adherent, ad.prenom_adherent,
-       COUNT(p.id_presence) AS nombre_visites,
-       AVG(TIMESTAMPDIFF(MINUTE, p.date_entree_salle, p.date_sortie_salle)) AS duree_moyenne_minutes
-FROM ADHERENT ad
-JOIN PRESENCE p ON ad.id_adherent = p.id_adherent
-WHERE p.date_sortie_salle IS NOT NULL
-GROUP BY ad.id_adherent, ad.nom_adherent, ad.prenom_adherent
-ORDER BY duree_moyenne_minutes DESC;
-
-
--- PARTIE 3: JOINTURES (5 requêtes)
-
-
--- Requête 11: Jointure interne simple - Liste des adhérents avec leur type d'abonnement actuel
--- Données recherchées: Vue complète des adhérents et de leur formule d'abonnement
-SELECT ad.nom_adherent, ad.prenom_adherent, ad.email_adherent,
-       t.type_abonnement, a.date_debut, a.date_fin
-FROM ADHERENT ad
-INNER JOIN ABONNEMENT a ON ad.id_adherent = a.id_adherent
-INNER JOIN TYPE_ABONNEMENT t ON a.id_type_abonnement = t.id_type_abonnement
-WHERE CURDATE() BETWEEN a.date_debut AND a.date_fin;
-
--- Requête 12: Jointure multiple - Détails complets des cours avec coach, type et salle
--- Données recherchées: Planning complet des cours pour communication aux adhérents
-SELECT tc.type_cours_collectif, cc.horaire_cours,
-       c.nom_coach, c.prenom_coach,
-       s.salle_cours, cc.nombre_max_participants_cours
-FROM COURS_COLLECTIF cc
-INNER JOIN TYPE_COURS tc ON cc.id_type_cours = tc.id_type_cours
-INNER JOIN COACH c ON cc.id_coach = c.id_coach
-INNER JOIN SALLE s ON cc.id_salle = s.id_salle
-ORDER BY cc.horaire_cours;
-
--- Requête 13: Jointure externe (LEFT JOIN) - Tous les adhérents et leurs sessions de coaching (y compris ceux qui n'en ont pas)
--- Données recherchées: Identifier les adhérents qui n'ont jamais pris de coaching personnalisé
-SELECT ad.nom_adherent, ad.prenom_adherent,
-       COUNT(sc.id_session) AS nombre_sessions_coaching
-FROM ADHERENT ad
-LEFT JOIN SESSION_COACHING sc ON ad.id_adherent = sc.id_adherent
-GROUP BY ad.id_adherent, ad.nom_adherent, ad.prenom_adherent
-ORDER BY nombre_sessions_coaching DESC;
-
--- Requête 14: Jointure multiple complexe - Réservations avec détails adhérent, cours, coach
--- Données recherchées: Liste complète des réservations pour gestion quotidienne
-SELECT r.date_reservation, ad.nom_adherent, ad.prenom_adherent,
-       tc.type_cours_collectif, cc.horaire_cours,
-       c.nom_coach, c.prenom_coach
-FROM RESERVATION r
-INNER JOIN ADHERENT ad ON r.id_adherent = ad.id_adherent
-INNER JOIN COURS_COLLECTIF cc ON r.id_cours = cc.id_cours
-INNER JOIN TYPE_COURS tc ON cc.id_type_cours = tc.id_type_cours
-INNER JOIN COACH c ON cc.id_coach = c.id_coach
-WHERE r.date_reservation >= '2024-09-01'
-ORDER BY r.date_reservation, cc.horaire_cours;
-
--- Requête 15: Jointure avec agrégation - Coachs et leur nombre de spécialités
--- Données recherchées: Évaluer la polyvalence des coachs
-SELECT c.nom_coach, c.prenom_coach,
-       COUNT(sc.id_specialite) AS nombre_specialites,
-       GROUP_CONCAT(s.specialite_coach SEPARATOR ', ') AS liste_specialites
-FROM COACH c
-LEFT JOIN SPECIALITE_COACH sc ON c.id_coach = sc.id_coach
-LEFT JOIN SPECIALITE s ON sc.id_specialite = s.id_specialite
-GROUP BY c.id_coach, c.nom_coach, c.prenom_coach
-ORDER BY nombre_specialites DESC;
-
-
--- PARTIE 4: REQUÊTES IMBRIQUÉES (5 requêtes)
-
-
--- Requête 16: Adhérents qui ont réservé au moins un cours de yoga (sous-requête avec IN)
--- Données recherchées: Cibler les pratiquants de yoga pour des offres spécifiques
-SELECT ad.nom_adherent, ad.prenom_adherent, ad.email_adherent
-FROM ADHERENT ad
-WHERE ad.id_adherent IN (
-    SELECT DISTINCT r.id_adherent
-    FROM RESERVATION r
-    INNER JOIN COURS_COLLECTIF cc ON r.id_cours = cc.id_cours
-    INNER JOIN TYPE_COURS tc ON cc.id_type_cours = tc.id_type_cours
-    WHERE tc.type_cours_collectif = 'yoga'
-);
-
--- Requête 17: Adhérents qui n'ont jamais acheté de produits (NOT IN)
--- Données recherchées: Identifier les adhérents à cibler pour promouvoir la boutique
-SELECT ad.nom_adherent, ad.prenom_adherent, ad.email_adherent
-FROM ADHERENT ad
-WHERE ad.id_adherent NOT IN (
-    SELECT DISTINCT id_adherent
-    FROM ACHAT
-);
-
--- Requête 18: Coachs qui animent des cours avec plus de 20 participants maximum (ANY)
--- Données recherchées: Identifier les coachs capables de gérer de grands groupes
-SELECT c.nom_coach, c.prenom_coach
-FROM COACH c
-WHERE c.id_coach = ANY (
-    SELECT cc.id_coach
-    FROM COURS_COLLECTIF cc
-    WHERE cc.nombre_max_participants_cours > 20
-);
-
--- Requête 19: Trouver les adhérents qui ont un abonnement premium (EXISTS)
--- Données recherchées: Liste des adhérents premium pour services VIP
-SELECT ad.nom_adherent, ad.prenom_adherent, ad.email_adherent
-FROM ADHERENT ad
-WHERE EXISTS (
-    SELECT 1
-    FROM ABONNEMENT a
-    INNER JOIN TYPE_ABONNEMENT t ON a.id_type_abonnement = t.id_type_abonnement
-    WHERE a.id_adherent = ad.id_adherent
-      AND t.type_abonnement = 'premium'
-      AND CURDATE() BETWEEN a.date_debut AND a.date_fin
-);
-
--- Requête 20: Produits plus chers que tous les produits de type textile (ALL)
--- Données recherchées: Identifier les produits premium (compléments alimentaires haut de gamme)
-SELECT nom_produit_vendu, prix_produit
-FROM PRODUIT
-WHERE prix_produit > ALL (
-    SELECT prix_produit
-    FROM PRODUIT
-    WHERE nom_produit_vendu LIKE '%shirt%' 
-       OR nom_produit_vendu LIKE '%Bouteille%'
-       OR nom_produit_vendu LIKE '%Serviette%'
-       OR nom_produit_vendu LIKE '%Gants%'
-)
-ORDER BY prix_produit DESC;
+-- 17) ACHAT (10)
+INSERT INTO ACHAT (quantite_vendue, date_achat, id_adherent, id_produit) VALUES
+(2,'2025-09-10',1,1),
+(1,'2025-09-12',2,2),
+(3,'2025-09-15',3,3),
+(1,'2025-09-18',4,4),
+(2,'2025-09-20',5,5),
+(1,'2025-10-02',6,6),
+(4,'2025-10-05',7,7),
+(2,'2025-10-07',8,8),
+(1,'2025-10-10',9,9),
+(5,'2025-10-15',10,10);
