@@ -5,9 +5,17 @@ USE salle_de_sport;
 -- PARTIE A : Check Constraints
 
 -- ADHERENT : âge >= 16, genre parmi 3 valeurs, email/phone au format simple
-ALTER TABLE ADHERENT
-  ADD CONSTRAINT chk_age_minimum
-  CHECK (TIMESTAMPDIFF(YEAR, date_naissance_adherent, CURDATE()) >= 16);
+DELIMITER //
+CREATE TRIGGER trg_verif_age_minimum
+BEFORE INSERT ON ADHERENT
+FOR EACH ROW
+BEGIN
+  IF TIMESTAMPDIFF(YEAR, NEW.date_naissance_adherent, CURDATE()) < 16 THEN
+    SIGNAL SQLSTATE '45000'
+      SET MESSAGE_TEXT = 'Âge minimum 16 ans requis';
+  END IF;
+END//
+DELIMITER ;
 
 ALTER TABLE ADHERENT
   ADD CONSTRAINT chk_genre_valide
@@ -64,9 +72,17 @@ ALTER TABLE ACHAT
   ADD CONSTRAINT chk_quantite_positive
   CHECK (quantite_vendue > 0);
 
-ALTER TABLE ACHAT
-  ADD CONSTRAINT chk_date_achat_passee
-  CHECK (date_achat <= CURDATE());
+DELIMITER //
+CREATE TRIGGER trg_verif_date_achat
+BEFORE INSERT ON ACHAT
+FOR EACH ROW
+BEGIN
+  IF NEW.date_achat > CURDATE() THEN
+    SIGNAL SQLSTATE '45000'
+      SET MESSAGE_TEXT = 'La date d\'achat ne peut pas être future';
+  END IF;
+END//
+DELIMITER ;
 
 -- PARTIE B : Triggers Métier
 
@@ -109,9 +125,11 @@ END//
 DELIMITER ;
 
 -- 3) Ne pas dépasser la capacité d’un cours pour une date donnée
+-- S’exécute APRÈS la vérif d’abonnement pour RESERVATION
 DELIMITER //
 CREATE TRIGGER trg_verif_capacite_cours
 BEFORE INSERT ON RESERVATION
+FOLLOWS trg_verif_abonnement_actif_reservation
 FOR EACH ROW
 BEGIN
   DECLARE nb_res INT;
